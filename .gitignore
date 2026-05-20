@@ -1,0 +1,21 @@
+# Build artifacts
+dist/
+*.exe
+
+# Go
+*.test
+*.out
+coverage.txt
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local config
+.env
