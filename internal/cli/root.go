@@ -7,6 +7,7 @@
 package cli
 
 import (
+	"github.com/rm-info/online_clipboard_cli/internal/version"
 	"github.com/spf13/cobra"
 )
 
@@ -31,8 +32,9 @@ func Execute() error {
 
 func newRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "clibo",
-		Short: "End-to-end encrypted clipboard CLI",
+		Use:     "clibo",
+		Version: version.String(),
+		Short:   "End-to-end encrypted clipboard CLI",
 		Long: `clibo is a single-binary CLI client for the online_clipboard E2EE
 clipboard service. All cryptography happens client-side: the server
 stores only opaque ciphertext, can never read your data, and never sees
