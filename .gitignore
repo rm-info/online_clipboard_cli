@@ -1,6 +1,7 @@
 # Build artifacts
 dist/
 *.exe
+/clibo
 
 # Go
 *.test
