@@ -47,30 +47,41 @@ func runLs(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	entries, fileBytes, err := ctx.Auth.List(ctx.Ctx, sid)
+	res, err := ctx.Auth.List(ctx.Ctx, sid)
 	if err != nil {
 		return err
 	}
 
 	out := cmd.OutOrStdout()
-	printSessionStatus(out, sid, len(entries), fileBytes, ctx.State)
+	printSessionStatus(out, sid, len(res.Entries), res.FileBytes, res.ExpiresAt, ctx.State)
 
 	statusOnly, _ := cmd.Flags().GetBool("status")
 	if statusOnly {
 		return nil
 	}
-	if len(entries) == 0 {
+	if len(res.Entries) == 0 {
 		fmt.Fprintln(out, "(no entries)")
 		return nil
 	}
-	printEntries(out, entries)
+	printEntries(out, res.Entries)
 	return nil
 }
 
-func printSessionStatus(w io.Writer, sid string, itemCount int, fileBytes int64, st *state.State) {
+// printSessionStatus formats the per-session header line. expiresAt is the
+// server-authoritative session expiry (unix seconds, 0 if the server didn't
+// supply it). When 0, falls back to the cookie's max-age from local cache —
+// less accurate (cookie slides on every request, session slides on writes
+// only) but better than nothing for servers older than 2.4.3.
+func printSessionStatus(w io.Writer, sid string, itemCount int, fileBytes int64, expiresAt int64, st *state.State) {
 	expires := "expiry unknown"
-	if c, ok := st.GetCookie(sid); ok {
-		remaining := time.Until(time.Unix(c.ExpiresAt, 0))
+	expiresAtTime := time.Time{}
+	if expiresAt > 0 {
+		expiresAtTime = time.Unix(expiresAt, 0)
+	} else if c, ok := st.GetCookie(sid); ok {
+		expiresAtTime = time.Unix(c.ExpiresAt, 0)
+	}
+	if !expiresAtTime.IsZero() {
+		remaining := time.Until(expiresAtTime)
 		if remaining > 0 {
 			expires = "expires in " + formatDuration(remaining)
 		} else {

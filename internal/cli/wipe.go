@@ -36,11 +36,11 @@ func runWipe(cmd *cobra.Command, args []string) error {
 
 	force, _ := cmd.Flags().GetBool("yes")
 	if !force {
-		entries, _, err := ctx.Auth.List(ctx.Ctx, sid)
+		res, err := ctx.Auth.List(ctx.Ctx, sid)
 		if err != nil {
 			return err
 		}
-		if err := confirmYesNo(fmt.Sprintf("Wipe session %s (%d %s)?", sid, len(entries), pluralize("entry", "entries", len(entries)))); err != nil {
+		if err := confirmYesNo(fmt.Sprintf("Wipe session %s (%d %s)?", sid, len(res.Entries), pluralize("entry", "entries", len(res.Entries)))); err != nil {
 			return err
 		}
 	}

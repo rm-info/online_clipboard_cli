@@ -40,15 +40,15 @@ func runDel(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	entries, _, err := ctx.Auth.List(ctx.Ctx, sid)
+	res, err := ctx.Auth.List(ctx.Ctx, sid)
 	if err != nil {
 		return err
 	}
-	idx, err := flow.ResolveIndex(spec, len(entries))
+	idx, err := flow.ResolveIndex(spec, len(res.Entries))
 	if err != nil {
 		return err
 	}
-	target := entries[idx]
+	target := res.Entries[idx]
 
 	force, _ := cmd.Flags().GetBool("yes")
 	if !force {

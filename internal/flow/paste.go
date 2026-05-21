@@ -25,19 +25,28 @@ type DecryptedEntry struct {
 	HasThumb  bool
 }
 
+// ListResult bundles the session-level data returned by List alongside the
+// decrypted entries. ExpiresAt is the server-authoritative session expiry
+// (unix seconds); zero if the server didn't include it (pre-2.4.3).
+type ListResult struct {
+	Entries   []DecryptedEntry
+	FileBytes int64
+	ExpiresAt int64
+}
+
 // List fetches and decrypts every entry in the session.
-func (a *Auth) List(ctx context.Context, sid string) ([]DecryptedEntry, int64, error) {
+func (a *Auth) List(ctx context.Context, sid string) (*ListResult, error) {
 	key, err := a.Key(ctx, sid)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	cookie, err := a.Cookie(ctx, sid)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	contents, err := a.Client.GetContents(ctx, sid, cookie)
 	if err != nil {
-		return nil, 0, a.handleSessionErr(sid, err)
+		return nil, a.handleSessionErr(sid, err)
 	}
 	a.State.LastSID = sid
 
@@ -56,20 +65,24 @@ func (a *Auth) List(ctx context.Context, sid string) ([]DecryptedEntry, int64, e
 			de.Timestamp = e.CreatedAt
 			pt, err := crypto.DecryptText(e.Ciphertext, key)
 			if err != nil {
-				return nil, 0, fmt.Errorf("decrypt entry %d: %w", i+1, err)
+				return nil, fmt.Errorf("decrypt entry %d: %w", i+1, err)
 			}
 			de.Text = pt
 		case proto.EntryFile:
 			de.Timestamp = e.UploadedAt
 			name, err := crypto.DecryptText(e.EncryptedName, key)
 			if err != nil {
-				return nil, 0, fmt.Errorf("decrypt filename for entry %d: %w", i+1, err)
+				return nil, fmt.Errorf("decrypt filename for entry %d: %w", i+1, err)
 			}
 			de.Filename = name
 		}
 		out = append(out, de)
 	}
-	return out, contents.FileBytes, nil
+	return &ListResult{
+		Entries:   out,
+		FileBytes: contents.FileBytes,
+		ExpiresAt: contents.ExpiresAt,
+	}, nil
 }
 
 // PastePayload is what GetEntry returns: either decrypted text or a
@@ -89,19 +102,19 @@ type PastePayload struct {
 // Returns ErrEntryNotFound if the index is out of range or the
 // session has no entries.
 func (a *Auth) GetEntry(ctx context.Context, sid string, spec ui.EntryIndexSpec) (*PastePayload, error) {
-	entries, _, err := a.List(ctx, sid)
+	res, err := a.List(ctx, sid)
 	if err != nil {
 		return nil, err
 	}
-	if len(entries) == 0 {
+	if len(res.Entries) == 0 {
 		return nil, ErrEntryNotFound
 	}
 
-	idx, err := ResolveIndex(spec, len(entries))
+	idx, err := ResolveIndex(spec, len(res.Entries))
 	if err != nil {
 		return nil, err
 	}
-	target := entries[idx]
+	target := res.Entries[idx]
 
 	switch target.Type {
 	case proto.EntryText:

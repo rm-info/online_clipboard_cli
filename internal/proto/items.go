@@ -34,9 +34,16 @@ type Entry struct {
 }
 
 // Contents is the response of GET /{sid}/contents.
+//
+// ExpiresAt is the unix-second timestamp at which the session will expire
+// on the server, sliding on writes only. Distinct from the cookie's expiry
+// (which slides on every authenticated request) — display this for "session
+// expires in X", not the cookie expiry. Zero if the server is older than
+// 2.4.3 and didn't include the field.
 type Contents struct {
 	Entries   []Entry `json:"entries"`
 	FileBytes int64   `json:"file_bytes"`
+	ExpiresAt int64   `json:"expires_at,omitempty"`
 }
 
 func (c *Client) GetContents(ctx context.Context, sid, cookie string) (*Contents, error) {
