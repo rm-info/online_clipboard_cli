@@ -97,7 +97,7 @@ func (a *Auth) GetEntry(ctx context.Context, sid string, spec ui.EntryIndexSpec)
 		return nil, ErrEntryNotFound
 	}
 
-	idx, err := resolveIndex(spec, len(entries))
+	idx, err := ResolveIndex(spec, len(entries))
 	if err != nil {
 		return nil, err
 	}
@@ -140,10 +140,10 @@ func (a *Auth) GetEntry(ctx context.Context, sid string, spec ui.EntryIndexSpec)
 // index falls outside the session's current contents.
 var ErrEntryNotFound = errors.New("entry not found")
 
-// resolveIndex turns an EntryIndexSpec into a 0-based array index
+// ResolveIndex turns an EntryIndexSpec into a 0-based array index
 // against a list of `length` entries. Returns ErrEntryNotFound for
 // out-of-range inputs.
-func resolveIndex(spec ui.EntryIndexSpec, length int) (int, error) {
+func ResolveIndex(spec ui.EntryIndexSpec, length int) (int, error) {
 	if length == 0 {
 		return 0, ErrEntryNotFound
 	}

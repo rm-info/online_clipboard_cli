@@ -57,6 +57,9 @@ Quick start:
 		newStatusCmd(),
 		newCopyCmd(),
 		newPasteCmd(),
+		newLsCmd(),
+		newDelCmd(),
+		newWipeCmd(),
 	)
 
 	return cmd

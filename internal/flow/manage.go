@@ -4,31 +4,22 @@ import (
 	"context"
 
 	"github.com/rm-info/online_clipboard_cli/internal/proto"
-	"github.com/rm-info/online_clipboard_cli/internal/ui"
 )
 
-// DeleteEntry removes the entry pointed to by spec. Text vs file is
-// resolved by looking up the entry in /contents first.
-func (a *Auth) DeleteEntry(ctx context.Context, sid string, spec ui.EntryIndexSpec) error {
-	entries, _, err := a.List(ctx, sid)
-	if err != nil {
-		return err
-	}
-	idx, err := resolveIndex(spec, len(entries))
-	if err != nil {
-		return err
-	}
-	target := entries[idx]
-
+// DeleteEntry removes a single already-resolved entry. The caller is
+// responsible for selecting the right one (via List + ResolveIndex);
+// taking the entry rather than a spec lets CLI commands show a
+// pre-delete confirmation without paying for a second /contents call.
+func (a *Auth) DeleteEntry(ctx context.Context, sid string, e *DecryptedEntry) error {
 	cookie, err := a.Cookie(ctx, sid)
 	if err != nil {
 		return err
 	}
-	switch target.Type {
+	switch e.Type {
 	case proto.EntryText:
-		return a.handleSessionErr(sid, a.Client.DeleteItem(ctx, sid, cookie, target.ID))
+		return a.handleSessionErr(sid, a.Client.DeleteItem(ctx, sid, cookie, e.ID))
 	case proto.EntryFile:
-		return a.handleSessionErr(sid, a.Client.DeleteFile(ctx, sid, cookie, target.ID))
+		return a.handleSessionErr(sid, a.Client.DeleteFile(ctx, sid, cookie, e.ID))
 	}
 	return nil
 }

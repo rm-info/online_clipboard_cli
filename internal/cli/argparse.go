@@ -120,3 +120,22 @@ func writeOutput(path string, data []byte, force bool) error {
 	}
 	return os.WriteFile(path, data, 0o644)
 }
+
+// confirmYesNo prints prompt to stderr and waits for y/yes (case-
+// insensitive) on stdin. Any other answer is treated as "no" and the
+// function returns an "aborted" error. Errors out without prompting
+// when stdin isn't a TTY — destructive commands should accept -y to
+// skip this path entirely.
+func confirmYesNo(prompt string) error {
+	if ui.IsStdinPipe() {
+		return fmt.Errorf("%s — pass -y to confirm (stdin is not a TTY)", prompt)
+	}
+	fmt.Fprintf(os.Stderr, "%s [y/N] ", prompt)
+	reader := bufio.NewReader(os.Stdin)
+	line, _ := reader.ReadString('\n')
+	ans := strings.TrimSpace(strings.ToLower(line))
+	if ans != "y" && ans != "yes" {
+		return errors.New("aborted by user")
+	}
+	return nil
+}
