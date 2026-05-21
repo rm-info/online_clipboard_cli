@@ -26,7 +26,13 @@ to your shell, with the same security guarantees.
 
 ## Install
 
-### One-liner (Linux & macOS)
+> **Demo instance vs. self-host.** The commands below default to
+> `https://clipboard.lab.rm-info.fr` — a personal homelab kept online
+> as a demo. Use it sparingly for evaluation. For anything beyond
+> playing around, [self-host the server](https://github.com/rm-info/online_clipboard)
+> and override the URL via `CLIBO_BASE` / `server_url`.
+
+### One-liner — Linux & macOS
 
 ```sh
 curl -sSL https://clipboard.lab.rm-info.fr/install.sh | sh
@@ -35,6 +41,18 @@ curl -sSL https://clipboard.lab.rm-info.fr/install.sh | sh
 Detects your platform, drops the binary in `/usr/local/bin/clibo`. Override
 the target with `CLIBO_BIN=~/.local/bin/clibo` to avoid `sudo`, or point at
 a self-hosted instance with `CLIBO_BASE=https://your.clipboard.tld`.
+
+### One-liner — Windows
+
+In PowerShell:
+
+```powershell
+irm https://clipboard.lab.rm-info.fr/install.ps1 | iex
+```
+
+Downloads `clibo.exe` to `%LOCALAPPDATA%\Programs\clibo\` and adds that
+directory to your user PATH. Open a new terminal to pick it up. Same
+overrides apply (`$env:CLIBO_BASE`, `$env:CLIBO_BIN`).
 
 ### Prebuilt binary (manual)
 
