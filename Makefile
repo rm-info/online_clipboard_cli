@@ -8,6 +8,12 @@ LDFLAGS := -s -w \
            -X $(MODULE)/internal/version.Version=$(VERSION) \
            -X $(MODULE)/internal/version.Commit=$(COMMIT)
 
+# CGO off everywhere: clibo only uses pure-Go packages, and a fully
+# static binary runs on any libc (alpine, glibc, musl) without
+# surprises. On linux+amd64 host builds, CGO is on by default and
+# would produce a dynamically linked binary that's not portable.
+export CGO_ENABLED := 0
+
 DIST := dist
 BIN  := clibo
 CMD  := ./cmd/$(BIN)
