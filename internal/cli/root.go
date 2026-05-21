@@ -55,6 +55,8 @@ Quick start:
 		newConfigCmd(),
 		newLastCmd(),
 		newStatusCmd(),
+		newCopyCmd(),
+		newPasteCmd(),
 	)
 
 	return cmd

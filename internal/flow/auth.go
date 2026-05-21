@@ -72,6 +72,14 @@ func (a *Auth) Key(ctx context.Context, sid string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("derive key: %w", err)
 	}
+	// Sanity check: AES-GCM-decrypt the verifier blob. AEAD failure
+	// here means the user-supplied password is wrong — return early
+	// instead of going through a content-decrypt cliff later (and
+	// definitely before trying to /auth, which would burn a server-
+	// side failure counter slot on a known-bad password).
+	if _, err := crypto.AuthProof(a.verifier.Verifier, key); err != nil {
+		return nil, ErrWrongPassword
+	}
 	a.key = key
 	a.sid = sid
 	return key, nil
