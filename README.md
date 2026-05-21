@@ -26,10 +26,20 @@ to your shell, with the same security guarantees.
 
 ## Install
 
-### Prebuilt binary
+### One-liner (Linux & macOS)
 
-Once a release is cut, the server hosts a redirect that always points
-to the latest release for your platform:
+```sh
+curl -sSL https://clipboard.lab.rm-info.fr/install.sh | sh
+```
+
+Detects your platform, drops the binary in `/usr/local/bin/clibo`. Override
+the target with `CLIBO_BIN=~/.local/bin/clibo` to avoid `sudo`, or point at
+a self-hosted instance with `CLIBO_BASE=https://your.clipboard.tld`.
+
+### Prebuilt binary (manual)
+
+The server hosts a redirect that always points to the latest release for
+your platform:
 
 ```sh
 curl -L https://clipboard.lab.rm-info.fr/cli/linux-amd64 -o /usr/local/bin/clibo
@@ -37,12 +47,9 @@ chmod +x /usr/local/bin/clibo
 ```
 
 Supported targets: `linux-amd64`, `linux-arm64`, `darwin-amd64`,
-`darwin-arm64`, `windows-amd64`.
-
-> The `/cli/<platform>` server route is planned but not yet deployed
-> in v0.1.0. Until it lands, grab the binary directly from the
-> [GitHub releases page](https://github.com/rm-info/online_clipboard_cli/releases)
-> or build from source.
+`darwin-arm64`, `windows-amd64.exe`. The discovery page at
+[`/cli`](https://clipboard.lab.rm-info.fr/cli) lists them all with direct
+download links.
 
 ### From source
 
